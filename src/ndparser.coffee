@@ -17,8 +17,8 @@ BYPASS_RECURSION =
   type : true
   raw : true
 
-  startToken : true
-  endToken : true
+  start_token : true
+  end_token : true
 
 # line_breaks :: String -> [Node]
 line_breaks = (source) ->
@@ -77,7 +77,12 @@ full_tokens = (source, ast) ->
   spaces = omitted_spaces tokens
   tokens = merge tokens, spaces
 
-# walk :: Node -> (Node -> Void) -> Void
+add_prev_next = (tokens) ->
+  for t,i in tokens[..-2]
+    t.next = tokens[i+1]
+    tokens[i+1].prev = t
+
+# walk :: Node -> (Node -> Node -> Void) -> Void
 exports.walk = walk = (node, f, parent) ->
   return unless node and node.type
   _walk = (n) -> walk n, f, node
@@ -99,17 +104,28 @@ exports.moonwalk = (node, f) ->
     for n in ns
       f n
 
-add_parent = (ast) ->
-  f = (node, parent) ->
-    node.parent = parent
-  walk ast, f, null
+instrument_node = (ast) ->
+  start_tokens = {}
+  end_tokens = {}
+  for token in ast.tokens
+    start_tokens[token.range[0]] = token
+    end_tokens[token.range[1]] = token
 
-add_depth = (ast) ->
-  walk ast, (node) ->
+  f = (node, parent) ->
+    # parent
+    node.parent = parent
+
+    # depth
     if node.parent
       node.depth = node.parent.depth + 1
     else
       node.depth = 0
+
+    # start, end token
+    node.start_token = start_tokens[node.range[0]]
+    node.end_token = end_tokens[node.range[1]]
+
+  walk ast, f, null
 
 exports.parse = (source) ->
   opt =
@@ -119,7 +135,8 @@ exports.parse = (source) ->
   ast = esprima.parse source, opt
   ast.tokens = full_tokens source, ast
 
-  add_parent ast
-  add_depth ast
+  add_prev_next ast.tokens
+
+  instrument_node ast
 
   ast

@@ -25,5 +25,4 @@ describe 'performance with jQuery', ->
           throw new Error('node should not be undefined')
         count++
       count.should.be.above 20000
-
-      @timeout 3 * 1000
+      @timeout 1000
