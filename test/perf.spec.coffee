@@ -12,11 +12,11 @@ describe 'performance with jQuery', ->
       file = _fs.readFileSync(__dirname + '/files/jquery.js', 'utf-8')
       ast = ndparser.parse(file)
       _jqueryAST = ast
-      @timeout 2 * 1000
+      @timeout 600
 
   describe 'ndparser.moonwalk', ->
     it 'should not take forever to loop over jQuery nodes', ->
-      if !_jqueryAST
+      if not _jqueryAST
         file = _fs.readFileSync(__dirname + '/files/jquery.js', 'utf-8')
         _jqueryAST = ndparser.parse(file)
       count = 0
@@ -25,4 +25,4 @@ describe 'performance with jQuery', ->
           throw new Error('node should not be undefined')
         count++
       count.should.be.above 20000
-      @timeout 1000
+      @timeout 100
