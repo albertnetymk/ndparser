@@ -8,8 +8,9 @@ describe 'parse', ->
     '''
     /* block */
     (function(){
-      return 123; // line
+      return 123;;; // line
     })
+    // he
     '''
   ast = ndparser.parse str
 
@@ -50,3 +51,10 @@ describe 'parse', ->
     block.end_token.value.should.equal '}'
     returnStatement.start_token.value.should.equal 'return'
     returnStatement.end_token.value.should.equal ';'
+
+  it 'should have toString() method', ->
+    ast.toString().should.equal str
+    array = str.split('\n')
+    exp = array.slice(1, array.length-1).join '\n'
+    expressionStatement.toString().should.equal exp
+

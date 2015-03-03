@@ -69,6 +69,12 @@ full_tokens = (source, ast) ->
   tokens = ast.tokens
 
   comments = ast.comments
+  for c in comments
+    switch c.type
+      when 'Block'
+        c.value = '/*' + c.value + '*/'
+      when 'Line'
+        c.value = '//' + c.value
   tokens = merge tokens, comments
 
   lbs = line_breaks source
@@ -128,6 +134,21 @@ instrument_node = (ast) ->
     # start, end token
     node.start_token = start_tokens[node.range[0]]
     node.end_token = end_tokens[node.range[1]]
+
+    # toString
+    node.toString = ->
+      if node.depth is 0
+        cur = ast.tokens[0]
+        end = ast.tokens[ast.tokens.length-1]
+      else
+        cur = node.start_token
+        end = node.end_token
+      values = []
+      while cur isnt end
+        values.push cur.value
+        cur = cur.next
+      values.push end.value
+      values.join ''
 
   walk ast, f, null
 
