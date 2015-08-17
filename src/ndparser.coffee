@@ -11,6 +11,7 @@ BYPASS_RECURSION =
   range : true
 
   parent : true
+  children : true
   next : true
   prev : true
 
@@ -152,6 +153,17 @@ instrument_node = (ast) ->
 
   walk ast, f, null
 
+add_children = (node) ->
+  return unless node and node.type
+  for k in Object.keys node
+    v = node[k]
+    continue if not v or typeof v isnt 'object' or BYPASS_RECURSION[k]
+    continue unless typeof v.length is 'number'
+    node.children = v
+    for n,i in v[..-2]
+      n.next = v[i+1]
+      v[i+1].prev = n
+
 exports.parse = (source) ->
   opt =
     range: true
@@ -163,5 +175,7 @@ exports.parse = (source) ->
   add_prev_next ast.tokens
 
   instrument_node ast
+
+  add_children ast
 
   ast

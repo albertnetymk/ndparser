@@ -9,7 +9,8 @@ describe 'parse', ->
     /* block */
     (function(){
       return 123;;; // line
-    })
+    });
+    1;
     // he
     '''
   ast = ndparser.parse str
@@ -42,9 +43,9 @@ describe 'parse', ->
 
   it 'should have start_token and end_token attribute', ->
     program.start_token.value.should.equal '('
-    program.end_token.value.should.equal ')'
+    program.end_token.value.should.equal ';'
     expressionStatement.start_token.value.should.equal '('
-    expressionStatement.end_token.value.should.equal ')'
+    expressionStatement.end_token.value.should.equal ';'
     fnExpression.start_token.value.should.equal 'function'
     fnExpression.end_token.value.should.equal '}'
     block.start_token.value.should.equal '{'
@@ -52,9 +53,16 @@ describe 'parse', ->
     returnStatement.start_token.value.should.equal 'return'
     returnStatement.end_token.value.should.equal ';'
 
+  it 'should have children attribute', ->
+    program.children.should.equal ast.body
+
+  it 'should have prev and next attribute between siblings', ->
+    for c,i in program.children[..-2]
+      c.next.should.equal program.children[i+1]
+      program.children[i+1].prev.should.equal c
+
   it 'should have toString() method', ->
     ast.toString().should.equal str
     array = str.split('\n')
-    exp = array.slice(1, array.length-1).join '\n'
+    exp = array.slice(1, array.length-2).join '\n'
     expressionStatement.toString().should.equal exp
-
